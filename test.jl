@@ -12,6 +12,8 @@ F = [.01 .99;.01 .99; .01 .99; .99 .01]
 G = [.8 .2; .1 .9]
 H = [.05 .95; .95 .05; .95 .05; .95 .05]
 
+CPTs = [A,B,C,D,E,F,G,H]
+
 println("dag")
 println(dag)
 
@@ -77,14 +79,14 @@ function check(g) #input moral graph
             for x = 1:l
                 for y = x+1:l
                     if g[(b[x]),(b[y])] == 0
-                        counter =+ 1
+                        counter += 1
                     end
                 end
             end
         end
         a[m] = counter;
     end
-    #println(a) 
+    println(a) 
     #f = []
     min = minimum(a)
     for k in 1:length(a)
@@ -100,7 +102,16 @@ f = check(mg)
 println("lowest\n", f)
 
 function weight(nd) #input node, return weight of corresponding node cluster
-    
+    w = 0
+    println(clusters[nd])
+    for i in clusters[nd]
+        cpt = CPTs[i]
+        println(size(cpt)[2])
+        w += size(cpt)[2]
+    end
+    return w
 end
 
-
+for i in f
+    println(i, " ", weight(i))
+end
