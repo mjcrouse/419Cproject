@@ -2,7 +2,6 @@
 
 dag = [0 1 1 0 0 0 0 0; 0 0 0 1 0 0 0 0; 0 0 0 0 1 0 1 0; 0 0 0 0 0 1 0 0; 0 0 0 0 0 1 0 1; 0 0 0 0 0 0 0 0; 0 0 0 0 0 0 0 1; 0 0 0 0 0 0 0 0]
 
-#TODO connect names of nodes to dag
 A = [.5 .5]
 B = [.5 .5;.4 .6]
 C = [.7 .3;.2 .8]
@@ -13,6 +12,7 @@ G = [.8 .2; .1 .9]
 H = [.05 .95; .95 .05; .95 .05; .95 .05]
 
 CPTs = [A,B,C,D,E,F,G,H]
+CPTnames = ["A", "B", "C", "D", "E", "F", "G", "H"]
 
 println("dag")
 println(dag)
@@ -52,13 +52,16 @@ end
 println("moral graph")
 println(mg)
 
-#nodes = ["A", "B", 'C', 'D', 'E', 'F', 'G', 'H']
-#println(nodes)
-
 f = []
 clusters = []
-#check without weights for now (get fewest edges added)
+
+#get fewest edges added
 function check(g) #input moral graph
+    global clusters = []
+    n = size(g)[1]
+    if n == 1
+        return println("There is only 1 element in the array: ", CPTnames[1])
+    end
     f = Int8[]
     a = zeros(Int8,n)
     for m = 1:n
@@ -86,6 +89,7 @@ function check(g) #input moral graph
         end
         a[m] = counter;
     end
+    println("edges added if node selected")
     println(a) 
     #f = []
     min = minimum(a)
@@ -101,17 +105,37 @@ end
 f = check(mg)
 println("lowest\n", f)
 
-function weight(nd) #input node, return weight of corresponding node cluster
+function weight(nd) #input node, return weight of corresponding node cluster (helper for loweight)
     w = 0
-    println(clusters[nd])
     for i in clusters[nd]
         cpt = CPTs[i]
-        println(size(cpt)[2])
         w += size(cpt)[2]
     end
     return w
 end
 
-for i in f
-    println(i, " ", weight(i))
+#return node with lowest weight and its weight
+function loweight(array)
+    a = []
+    for i in f
+       push!(a,weight(i))
+    end
+    return [f[argmin(a)], minimum(a)]
 end
+
+#function addedge(nd)
+
+
+function delete(nd) #delete node with lowest weight from moral graph
+    println("deleted node: ", CPTnames[nd])
+    deleteat!(CPTnames,nd)
+    return mg[1:end.!=nd,1:end.!=nd]
+end
+
+#(don't need to check/add edges once down to 3 nodes? but need to remove to finish algorithm???)
+for x in 1:n-1
+    println("clusters: ",clusters)
+    global mg = delete(loweight(f)[1])
+    global f = check(mg)
+end
+
