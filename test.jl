@@ -13,6 +13,7 @@ H = [.05 .95; .95 .05; .95 .05; .95 .05]
 
 CPTs = [A,B,C,D,E,F,G,H]
 CPTnames = ["A", "B", "C", "D", "E", "F", "G", "H"]
+CPTlist = ["A", "B", "C", "D", "E", "F", "G", "H"]
 
 println("dag")
 println(dag)
@@ -52,10 +53,13 @@ end
 println("moral graph")
 println(mg)
 
+ogmg = deepcopy(mg) #original moral graph
+
 f = []
 clusters = []
+min = 100000
 
-#get fewest edges added
+#get fewest edges added and corresponding nodes
 function check(g) #input moral graph
     global clusters = []
     n = size(g)[1]
@@ -92,7 +96,7 @@ function check(g) #input moral graph
     println("edges added if node selected")
     println(a) 
     #f = []
-    min = minimum(a)
+    global min = minimum(a)
     for k in 1:length(a)
         if ( min == a[k])
             push!(f,k)
@@ -114,17 +118,31 @@ function weight(nd) #input node, return weight of corresponding node cluster (he
     return w
 end
 
-#return node with lowest weight and its weight
+#return node with lowest weight
 function loweight(array)
     a = []
     for i in f
        push!(a,weight(i))
     end
-    return [f[argmin(a)], minimum(a)]
+    return f[argmin(a)]
 end
 
-#function addedge(nd)
-
+#add edges to moral graph and mg' (TODO: need to adjust for mg')
+function addedges(nd)
+    c = clusters[nd]
+    n = size(c)[1]
+    for i in 2:n-1
+        for j in 3:n
+            mg[c[i],c[j]] = mg[c[j],c[i]] = 1
+            k = findfirst(x -> x == CPTnames[i],CPTlist)
+            #println(CPTnames[i])
+            l = findfirst(x -> x == CPTnames[j],CPTlist)
+            #println(CPTnames[j])
+            #println(CPTlist)
+            ogmg[k,l] = ogmg[l,k] = 1
+        end
+    end
+end
 
 function delete(nd) #delete node with lowest weight from moral graph
     println("deleted node: ", CPTnames[nd])
@@ -135,7 +153,13 @@ end
 #(don't need to check/add edges once down to 3 nodes? but need to remove to finish algorithm???)
 for x in 1:n-1
     println("clusters: ",clusters)
-    global mg = delete(loweight(f)[1])
+    getlo = loweight(f)
+    #println("min: ", min)
+    if min > 0
+        addedges(getlo)
+    end
+    global mg = delete(getlo)
     global f = check(mg)
-end
+end    
 
+println(ogmg)
