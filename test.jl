@@ -1,6 +1,7 @@
 #using LinearAlgebra
 
 dag = [0 1 1 0 0 0 0 0; 0 0 0 1 0 0 0 0; 0 0 0 0 1 0 1 0; 0 0 0 0 0 1 0 0; 0 0 0 0 0 1 0 1; 0 0 0 0 0 0 0 0; 0 0 0 0 0 0 0 1; 0 0 0 0 0 0 0 0]
+#dag = [0 1 1 1 0 0 0 0 0 0 0 0;0 0 0 0 1 0 0 0 0 0 0 0; 0 0 0 0 0 1 0 0 0 0 0 0;0 0 0 0 0 0 1 0 0 0 0 0; 0 0 0 0 0 0 0 1 0 0 0 0; 0 0 0 0 0 0 0 0 1 0 0 0;0 0 0 0 0 0 0 0 0 1 0 0; 0 0 0 0 0 0 0 0 1 0 1 0; 0 0 0 0 0 0 0 0 0 0 0 1; 0 0 0 0 0 0 0 0 0 0 0 1; 0 0 0 0 0 0 0 0 0 0 0 0; 0 0 0 0 0 0 0 0 0 0 0 0]
 
 A = [.5 .5]
 B = [.5 .5;.4 .6]
@@ -11,9 +12,14 @@ F = [.01 .99;.01 .99; .01 .99; .99 .01]
 G = [.8 .2; .1 .9]
 H = [.05 .95; .95 .05; .95 .05; .95 .05]
 
-CPTs = [A,B,C,D,E,F,G,H]
-CPTnames = ["A", "B", "C", "D", "E", "F", "G", "H"]
-CPTlist = ["A", "B", "C", "D", "E", "F", "G", "H"]
+#= I = [1 1 1 1; 1 1 1 1]
+J = [1 1 1; 1 1 1]
+K = [1 1; 1 1]
+L = [1 1 1 1 1; 1 1 1 1 1] =#
+
+CPTs = [A,B,C,D,E,F,G,H]#,I,J,K,L]
+CPTnames = ["A", "B", "C", "D", "E", "F", "G", "H"] # "I", "J", "K", "L"]
+CPTlist = ["A", "B", "C", "D", "E", "F", "G", "H"] #"I", "J", "K", "L"]
 
 println("dag")
 println(dag)
@@ -50,6 +56,7 @@ for m = 3:n
         end
     end
 end
+
 println("moral graph")
 println(mg)
 
@@ -127,7 +134,9 @@ function loweight(array)
     return f[argmin(a)]
 end
 
-#add edges to moral graph and mg' (TODO: need to adjust for mg')
+cliques = []
+
+#add edges to moral graph and mg' and clique to cliques
 function addedges(nd)
     c = clusters[nd]
     n = size(c)[1]
@@ -145,6 +154,15 @@ function addedges(nd)
 end
 
 function delete(nd) #delete node with lowest weight from moral graph
+    c = clusters[nd]
+    cliq = []
+    for i in c
+        push!(cliq,CPTnames[i])
+    end
+    if size(cliq)[1] == 3
+        sort!(cliq)
+        push!(cliques,cliq)
+    end
     println("deleted node: ", CPTnames[nd])
     deleteat!(CPTnames,nd)
     return mg[1:end.!=nd,1:end.!=nd]
@@ -163,3 +181,5 @@ for x in 1:n-1
 end    
 
 println(ogmg)
+println(cliques)
+
