@@ -3,6 +3,7 @@ using DataStructures
 cliques = [["D", "E", "F"], ["E", "G", "H"], ["C", "E", "G"], ["A", "B", "C"], ["B", "C", "D"], ["C", "D", "E"]]
 cliqex = [["D", "E", "F"], ["E", "G", "H"], ["C", "E", "G"], ["A", "B", "D"], ["A", "C", "E"], ["A", "D", "E"]]
 cliqexnames = ["DEF","EGH","CEG","ABD","ACE","ADE"] #concat sorted clique arrays into 1
+cliquesnames = ["DEF","EGH","CEG","ABC", "BCD", "CDE"]
 #println(cliques)
 println("\nclique\n",cliqex)
 
@@ -30,6 +31,7 @@ mutable struct sepset
     mass
     cost
 end
+sepset() = sepset(-1,-1,[],-1,-1)
 
 #these functions could be simpler = format
 function vweight(v)
@@ -50,8 +52,8 @@ function mass(sepset)
     size(sepset.vs)[1]
 end
 
-sepset() = sepset(0,0,[],0,0)
 
+#get each sepset, sort by increasing order
 function getsepsets(cliqueset, names)
     n = size(cliqueset)[1]
     for i in 1:n-1
@@ -78,7 +80,6 @@ end
 spst = getsepsets(cliqex, cliqexnames)
 println("\nsepsets\n",spst)
 
-#if depth even then cluster, if odd then sepset, 0 is no child
 mutable struct node
     name
     parent
@@ -89,7 +90,7 @@ node(name) = node(name,-1,-1,-1)
 node(name,parent) = node(name,parent,-1,-1)
 
 #initialize tree
-function buildtree(cliquearray)
+function buildtrees(cliquearray)
     trees = []
     for i in cliqex
         nd = node(i)
@@ -98,8 +99,9 @@ function buildtree(cliquearray)
     trees
 end
 
-tree = buildtree(cliqex)
-println("\ntree\n",tree)
+trees = buildtrees(cliqex)
+println("\ntrees\n")
+println.(trees)
 
 #= function search(key,root)
     v = false
@@ -114,29 +116,34 @@ println("\ntree\n",tree)
     [v,node]
 end =#
 
-#= function search(key, index)
-    v=false
-    node = tree[index][1]
-    for i in 1:size(tree)[2]
-        k = findfirst(x -> x == tree[i].name,tree[i])
-        node = tree[i][k]
+function search(key, index)
+    v = false
+    node = trees[index][1]
+    tmp = []
+    for i in trees[index]
+        push!(tmp,i.name)
+    end
+    k = findfirst(x -> x == key,tmp)
+    if k !== nothing 
+        v = true
+        node = trees[index][k]
     end
     [v,node]
 end
 
 function addsepset(trees, sepset)
     ss = pop!(sepset)
-    println(ss)
+    println("\n", ss)
     #get trees of cluster parents
     r = [-1 -1]
     na = [node("-1"), node("-1")]
     for i in 1:size(trees)[1]
-        p1 = search(ss.parent, trees[i])
+        p1 = search(ss.parent,i)
         if p1[1]
             r[1] = i
             na[1] = p1[2]
         end
-        p2 = search(ss.child1,trees[i])
+        p2 = search(ss.child1,i)
         if p2[1]
             r[2] = i
             na[2] = p2[2]
@@ -169,14 +176,16 @@ function addsepset(trees, sepset)
             end
         end =#
 
+        #combine trees right to left
         nn = node(ss.vs,ss.parent,ss.child1,-1)
+        println(r[1], " ", r[2])
         if r[1] > r[2]
             push!(trees[r[2]],nn)
-            push!(trees[r[2]],na[2])
+            append!(trees[r[2]],trees[r[1]])
             deleteat!(trees,r[1])
         else
             push!(trees[r[1]],nn)
-            push!(trees[r[1]],na[1])
+            append!(trees[r[1]],trees[r[2]])
             deleteat!(trees,r[2])
         end
     end
@@ -193,9 +202,26 @@ b = node(["E", "G", "H"], tree,-1,-1)
 tree.parent = a
 tree.child1 = b
 
-println(search(["E", "G"],tree)) =#
+println(search(["E", "G"],trees)) =#
 
-addsepset(tree,spst)
-println("\n",tree)
-addsepset(tree,spst)
-println("\n",tree) =#
+addsepset(trees,spst)
+println("\ntrees after adding first sepset\n")
+println.(trees)
+addsepset(trees,spst)
+println("\ntrees after adding second sepset\n")
+println.(trees)
+addsepset(trees,spst)
+println("\ntrees after adding third sepset\n")
+println.(trees)
+addsepset(trees,spst)
+println("\ntrees after adding fourth sepset\n")
+println.(trees)
+addsepset(trees,spst)
+println("\ntrees after adding fifth sepset\n")
+println.(trees)
+
+println.(trees[1])
+
+#update nodes for correct children/parents?
+#sort? pretty print
+#what do I need for initializing?
