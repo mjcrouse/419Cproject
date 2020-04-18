@@ -5,6 +5,7 @@ cliqex = [["D", "E", "F"], ["E", "G", "H"], ["C", "E", "G"], ["A", "B", "D"], ["
 cliqexnames = ["DEF","EGH","CEG","ABD","ACE","ADE"] #concat sorted clique arrays into 1
 cliquesnames = ["DEF","EGH","CEG","ABC", "BCD", "CDE"]
 #println(cliques)
+cliqex = sort(cliqex, by = x -> (x[1],x[2],x[3]))
 println("\nclique\n",cliqex)
 
 A = [.5 .5]
@@ -82,12 +83,12 @@ println("\nsepsets\n",spst)
 
 mutable struct node
     name
-    parent
-    child1
-    child2
+    e1
+    e2
+    e3
 end
 node(name) = node(name,-1,-1,-1)
-node(name,parent) = node(name,parent,-1,-1)
+node(name,e1) = node(name,e1,-1,-1)
 
 #initialize tree
 function buildtrees(cliquearray)
@@ -137,6 +138,8 @@ function addsepset(trees, sepset)
     #get trees of cluster parents
     r = [-1 -1]
     na = [node("-1"), node("-1")]
+    p1 = node("-1")
+    p2 = node("-1")
     for i in 1:size(trees)[1]
         p1 = search(ss.parent,i)
         if p1[1]
@@ -188,6 +191,17 @@ function addsepset(trees, sepset)
             append!(trees[r[1]],trees[r[2]])
             deleteat!(trees,r[2])
         end
+        println(na)
+        for i in 1:2
+            if na[i].e1 == -1
+                na[i].e1 = ss.vs
+            elseif na[i].e2 == -1
+                na[i].e2 = ss.vs
+            else
+                na[i].e3 = ss.vs
+            end
+        end
+        println(na)
     end
     # add node 
     #nn = node(ss.vs,-1,0,0)
@@ -204,7 +218,7 @@ tree.child1 = b
 
 println(search(["E", "G"],trees)) =#
 
-addsepset(trees,spst)
+#= addsepset(trees,spst)
 println("\ntrees after adding first sepset\n")
 println.(trees)
 addsepset(trees,spst)
@@ -218,10 +232,40 @@ println("\ntrees after adding fourth sepset\n")
 println.(trees)
 addsepset(trees,spst)
 println("\ntrees after adding fifth sepset\n")
-println.(trees)
+println.(trees) =#
 
-println.(trees[1])
+n = size(trees)[1]
+for i in 1:n-1
+    addsepset(trees,spst)
+    println("\ntrees after adding sepset ", i, "\n")
+    println.(trees)
+end
+tree = trees[1]
+println.("\n",tree)
 
+tree = sort(tree, by = x -> (size(x.name)[1], x.name[1], x.name[2]))
 #update nodes for correct children/parents?
+
+for i in 1:size(tree)[1]
+    nd = tree[i]
+    if size(nd.name)[1] == 2
+        println("Sepset: ", join(nd.name), " Edges: ", join(nd.e1), " ", join(nd.e2))
+    else
+        print("Cluster: ", join(nd.name), " Edges: ", join(nd.e1))
+        if nd.e2 != -1
+            print(" ", join(nd.e2))
+            if nd.e3 != -1
+                print(" ", join(nd.e3))
+            end
+        end
+        print("\n")
+    end
+end
+
 #sort? pretty print
 #what do I need for initializing?
+
+#= println(sort(cliqexnames))
+println(join.(cliqex))
+
+println(sort(cliqex, by = x -> (x[1],x[2],x[3]))) =#
