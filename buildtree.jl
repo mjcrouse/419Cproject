@@ -1,12 +1,10 @@
 using DataStructures
 
-cliques = [["D", "E", "F"], ["E", "G", "H"], ["C", "E", "G"], ["A", "B", "C"], ["B", "C", "D"], ["C", "D", "E"]]
+#cliqex = [["D", "E", "F"], ["E", "G", "H"], ["C", "E", "G"], ["A", "B", "C"], ["B", "C", "D"], ["C", "D", "E"]]
 cliqex = [["D", "E", "F"], ["E", "G", "H"], ["C", "E", "G"], ["A", "B", "D"], ["A", "C", "E"], ["A", "D", "E"]]
-cliqexnames = ["DEF","EGH","CEG","ABD","ACE","ADE"] #concat sorted clique arrays into 1
-cliquesnames = ["DEF","EGH","CEG","ABC", "BCD", "CDE"]
-#println(cliques)
-cliqex = sort(cliqex, by = x -> (x[1],x[2],x[3]))
-println("\nclique\n",cliqex)
+cliqexnames = join.(cliqex)
+sort!(cliqex, by = x -> (x[1],x[2],x[3]))
+println("\ncliques\n",cliqex)
 
 A = [.5 .5]
 B = [.5 .5;.4 .6]
@@ -21,11 +19,11 @@ CPTs = [A,B,C,D,E,F,G,H]
 CPTnames = ["A", "B", "C", "D", "E", "F", "G", "H"]
 CPTlist = ["A", "B", "C", "D", "E", "F", "G", "H"]
 
+dag = [0 1 1 0 0 0 0 0; 0 0 0 1 0 0 0 0; 0 0 0 0 1 0 1 0; 0 0 0 0 0 1 0 0; 0 0 0 0 0 1 0 1; 0 0 0 0 0 0 0 0; 0 0 0 0 0 0 0 1; 0 0 0 0 0 0 0 0]
+
 theta = []
 
-#add types
 mutable struct sepset
-    #name
     parent
     child1
     vs
@@ -34,7 +32,6 @@ mutable struct sepset
 end
 sepset() = sepset(-1,-1,[],-1,-1)
 
-#these functions could be simpler = format
 function vweight(v)
     index = findfirst(x -> x == v,CPTlist)
     cpt = CPTs[index]
@@ -54,7 +51,7 @@ function mass(sepset)
 end
 
 
-#get each sepset, sort by increasing order
+#get each sepset, sort by increasing order mass then cost
 function getsepsets(cliqueset, names)
     n = size(cliqueset)[1]
     for i in 1:n-1
@@ -104,19 +101,6 @@ trees = buildtrees(cliqex)
 println("\ntrees\n")
 println.(trees)
 
-#= function search(key,root)
-    v = false
-    node = root
-    if root.name == key
-       global v = true
-    elseif root.child1 == -1 && root.child2 == -1
-    else
-        root.child1 == -1 || search(key,root.child1)
-        root.child2 == -1 || search(key,root.child2)
-    end
-    [v,node]
-end =#
-
 function search(key, index)
     v = false
     node = trees[index][1]
@@ -153,35 +137,8 @@ function addsepset(trees, sepset)
         end
     end
     if r[1] != r[2]
-        #println(r)
-        #combine trees
-
-#=         #case 1 left node free child right node no parent
-        if (na[1].child1 == -1 || na[2].child2 == -1) && na[2].parent == -1
-            if na[1].child1 == -1 && na[2].child2 == -1
-                na[1].child1 = ss
-            else
-                na[1].child2 = ss
-            end
-            na[2].parent = ss
-            nn = node(ss.vs,ss.parent,ss.child1,-1)
-            push!(nodes,nn)
-        end
-        #case 2 left node free child right node has parent
-        if na[1].child1 == -1 && na[2].parent != -1
-            na[1].child1 = ss
-            if na[2].child1 == -1
-                na[2].child1 == na[2].parent
-                na[2].parent == ss
-            else
-                na[2].child2 == na[2].parent
-                na[2].parent == ss
-            end
-        end =#
-
         #combine trees right to left
         nn = node(ss.vs,ss.parent,ss.child1,-1)
-        println(r[1], " ", r[2])
         if r[1] > r[2]
             push!(trees[r[2]],nn)
             append!(trees[r[2]],trees[r[1]])
@@ -191,7 +148,6 @@ function addsepset(trees, sepset)
             append!(trees[r[1]],trees[r[2]])
             deleteat!(trees,r[2])
         end
-        println(na)
         for i in 1:2
             if na[i].e1 == -1
                 na[i].e1 = ss.vs
@@ -201,38 +157,8 @@ function addsepset(trees, sepset)
                 na[i].e3 = ss.vs
             end
         end
-        println(na)
     end
-    # add node 
-    #nn = node(ss.vs,-1,0,0)
-
-    #recalc
 end
-
-#test
-#= tree = node(["D"])
-a = node(["D","E","F"], tree,-1,-1)
-b = node(["E", "G", "H"], tree,-1,-1)
-tree.parent = a
-tree.child1 = b
-
-println(search(["E", "G"],trees)) =#
-
-#= addsepset(trees,spst)
-println("\ntrees after adding first sepset\n")
-println.(trees)
-addsepset(trees,spst)
-println("\ntrees after adding second sepset\n")
-println.(trees)
-addsepset(trees,spst)
-println("\ntrees after adding third sepset\n")
-println.(trees)
-addsepset(trees,spst)
-println("\ntrees after adding fourth sepset\n")
-println.(trees)
-addsepset(trees,spst)
-println("\ntrees after adding fifth sepset\n")
-println.(trees) =#
 
 n = size(trees)[1]
 for i in 1:n-1
@@ -240,12 +166,11 @@ for i in 1:n-1
     println("\ntrees after adding sepset ", i, "\n")
     println.(trees)
 end
+
 tree = trees[1]
-println.("\n",tree)
+sort!(tree, by = x -> (size(x.name)[1], x.name[1], x.name[2]))
 
-tree = sort(tree, by = x -> (size(x.name)[1], x.name[1], x.name[2]))
-#update nodes for correct children/parents?
-
+println("\nNodes in tree\n")
 for i in 1:size(tree)[1]
     nd = tree[i]
     if size(nd.name)[1] == 2
@@ -262,10 +187,33 @@ for i in 1:size(tree)[1]
     end
 end
 
-#sort? pretty print
-#what do I need for initializing?
+#initialize
+function getparents(v)
+    result = []
+    ind = findfirst(x -> x == v,CPTlist)
+    col = dag[:,ind]
+    cptind = findall(x -> x == 1, col)
+    for i in cptind
+        push!(result,getindex(CPTlist,i))
+    end
+    result
+end
 
-#= println(sort(cliqexnames))
-println(join.(cliqex))
+#create potential and set each element to 1
+function onepo(node)
+    vs = node.name
+    size = 1
+    for i in vs
+        size *= vweight(i)
+    end
+    ones(size)
+end
 
-println(sort(cliqex, by = x -> (x[1],x[2],x[3]))) =#
+potentials = Dict{Array, Array}()
+
+for i in tree
+    potentials[i.name] = onepo(i)
+end
+for i in keys(potentials)
+    println(i, " ", potentials[i])
+end
