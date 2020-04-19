@@ -15,9 +15,20 @@ F = [.01 .99;.01 .99; .01 .99; .99 .01]
 G = [.8 .2; .1 .9]
 H = [.05 .95; .95 .05; .95 .05; .95 .05]
 
+#= Av = ["on", "off"]
+Bv = ["on" "on"; "on" "off";"off" "on"; "off" "off"]
+Cv = deepcopy(Bv)
+Dv = deepcopy(Bv)
+Ev = deepcopy(Bv)
+Fv = ["on" "on" "on"; "on" "on" "off"; ] =#
+
 CPTs = [A,B,C,D,E,F,G,H]
 CPTnames = ["A", "B", "C", "D", "E", "F", "G", "H"]
 CPTlist = ["A", "B", "C", "D", "E", "F", "G", "H"]
+
+function indexof(variable, string)
+    findfirst(x -> x == variable, string)
+end
 
 dag = [0 1 1 0 0 0 0 0; 0 0 0 1 0 0 0 0; 0 0 0 0 1 0 1 0; 0 0 0 0 0 1 0 0; 0 0 0 0 0 1 0 1; 0 0 0 0 0 0 0 0; 0 0 0 0 0 0 0 1; 0 0 0 0 0 0 0 0]
 
@@ -190,7 +201,7 @@ end
 #initialize
 function getparents(v)
     result = []
-    ind = findfirst(x -> x == v,CPTlist)
+    ind = indexof(v, CPTlist)
     col = dag[:,ind]
     cptind = findall(x -> x == 1, col)
     for i in cptind
@@ -199,7 +210,7 @@ function getparents(v)
     result
 end
 
-#create potential and set each element to 1
+#create cluster and sepset potential and set each element to 1, potential size is product of weights of variables
 function onepo(node)
     vs = node.name
     size = 1
@@ -209,11 +220,82 @@ function onepo(node)
     ones(size)
 end
 
+#create dictionary and initialize each potential to 1
 potentials = Dict{Array, Array}()
-
 for i in tree
     potentials[i.name] = onepo(i)
 end
+for i in keys(potentials)
+    println(i, " ", potentials[i])
+end
+
+#initialize potentials, assumes standard variable pattern for CPTs
+for i in CPTlist
+    par = getparents(i)
+    vs = deepcopy(par)
+    #case 1, node has no parents
+    if isempty(par)
+        continue
+    end
+    push!(vs,i)
+    for j in cliqex
+        if issubset(vs, j)
+            #case 2, node has 2 parents, size of potential matches size of P(Z|XY) 
+            if size(par)[1] == 2
+                for k in 1:size(potentials[j])[1]
+                    cpt = CPTs[indexof(i,CPTlist)]
+                    potentials[j][k] = potentials[j][k] * cpt[k]
+                end
+                break
+            else
+                cpt = CPTs[indexof(i,CPTlist)]
+                cpt = vec(permutedims(cpt))
+                posize = size(potentials[j])[1]
+                cptsize = length(cpt)
+                #case 3, P(Z|Y), repeat full P pattern across potential
+                if indexof(vs[1],j) == 2 && indexof(vs[2],j) == 3
+                    poind = 1
+                    for k in 1:(posize/cptsize)
+                        for l in 1:cptsize
+                            potentials[j][poind] = potentials[j][poind] * cpt[l]
+                            poind += 1
+                        end
+                    end
+                    break
+                end
+                #case 4, P(Z|X)
+                if indexof(vs[1],j) == 1 && indexof(vs[2],j) == 3
+                    poind = 1
+                    poind2 = trunc(Int,posize/2) + 1
+                    for k in 1:trunc(Int,(posize/cptsize))
+                        for l in 1:trunc(Int,cptsize/2)
+                            potentials[j][poind] = potentials[j][poind] * cpt[l]
+                            poind += 1
+                        end
+                        for m in trunc(Int,cptsize/2)+1:cptsize
+                            potentials[j][poind2] = potentials[j][poind2] * cpt[m]
+                            poind2 += 1
+                        end
+                    end
+                    break
+                end
+                #case 5, P(Y|X), repeat elements posize/cptsize times across potential
+                if indexof(vs[1],j) == 1 && indexof(vs[2],j) == 2
+                    poind = 1
+                    for k in 1:cptsize
+                        for l in 1:trunc(Int,(posize/cptsize))
+                            potentials[j][poind] = potentials[j][poind] * cpt[k]
+                            poind += 1
+                        end
+                    end
+                    break
+                end
+            end
+        
+        end
+    end
+end
+
 for i in keys(potentials)
     println(i, " ", potentials[i])
 end
