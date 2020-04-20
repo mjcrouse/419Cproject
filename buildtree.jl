@@ -1,7 +1,9 @@
 using DataStructures
+#only working for fully closed BNTs where all clusters are 3 variables and sepsets are 2 variables
 
 #BNT 1, using my triangulation
 #= cliqex = [["D", "E", "F"], ["E", "G", "H"], ["C", "E", "G"], ["A", "B", "C"], ["B", "C", "D"], ["C", "D", "E"]]
+dag = [0 1 1 0 0 0 0 0; 0 0 0 1 0 0 0 0; 0 0 0 0 1 0 1 0; 0 0 0 0 0 1 0 0; 0 0 0 0 0 1 0 1; 0 0 0 0 0 0 0 0; 0 0 0 0 0 0 0 1; 0 0 0 0 0 0 0 0]
 A = [.5 .5]
 B = [.5 .5;.4 .6]
 C = [.7 .3;.2 .8]
@@ -16,6 +18,7 @@ CPTlist = ["A", "B", "C", "D", "E", "F", "G", "H"] =#
 
 #BNT 1, using article triangulation
 #= cliqex = [["D", "E", "F"], ["E", "G", "H"], ["C", "E", "G"], ["A", "B", "D"], ["A", "C", "E"], ["A", "D", "E"]]
+dag = [0 1 1 0 0 0 0 0; 0 0 0 1 0 0 0 0; 0 0 0 0 1 0 1 0; 0 0 0 0 0 1 0 0; 0 0 0 0 0 1 0 1; 0 0 0 0 0 0 0 0; 0 0 0 0 0 0 0 1; 0 0 0 0 0 0 0 0]
 A = [.5 .5]
 B = [.5 .5;.4 .6]
 C = [.7 .3;.2 .8]
@@ -28,8 +31,9 @@ CPTs = [A,B,C,D,E,F,G,H]
 CPTnames = ["A", "B", "C", "D", "E", "F", "G", "H"]
 CPTlist = ["A", "B", "C", "D", "E", "F", "G", "H"] =#
 
-# BNT 2, 6x6
-cliqex = [["D", "E", "F"], ["A", "B", "C"], ["B", "C", "D"], ["C", "D", "E"]]
+# BNT 5, 6x6
+#= cliqex = [["D", "E", "F"], ["A", "B", "C"], ["B", "C", "D"], ["C", "D", "E"]]
+dag = [0 1 1 0 0 0; 0 0 0 1 0 0; 0 0 0 0 1 0; 0 0 0 0 0 1; 0 0 0 0 0 1; 0 0 0 0 0 0]
 A = [.5 .5]
 B = [.5 .5;.4 .6]
 C = [.7 .3;.2 .8]
@@ -38,7 +42,21 @@ E = [.3 .7;.6 .4]
 F = [.01 .99;.01 .99;.05 .95;.95 .05]
 CPTs = [A,B,C,D,E,F]
 CPTnames = ["A", "B", "C", "D", "E", "F"]
+CPTlist = ["A", "B", "C", "D", "E", "F"] =#
+
+# BNT 5, 6x6 with more variable instants 
+cliqex = [["D", "E", "F"], ["A", "B", "C"], ["B", "C", "D"], ["C", "D", "E"]]
+dag = [0 1 1 0 0 0; 0 0 0 1 0 0; 0 0 0 0 1 0; 0 0 0 0 0 1; 0 0 0 0 0 1; 0 0 0 0 0 0]
+A = [.5 .3 .2]
+B = [.5 .5;.4 .6;.2 .8]
+C = [.7 .3;.2 .8;.1 .9]
+D = [.9 .1;.5 .5]
+E = [.3 .7;.6 .4]
+F = [.01 .97 .01 .01;.01 .97 .01 .01;.05 .90 .03 .02;.95 .01 .02 .02]
+CPTs = [A,B,C,D,E,F]
+CPTnames = ["A", "B", "C", "D", "E", "F"]
 CPTlist = ["A", "B", "C", "D", "E", "F"]
+
 
 cliqexnames = join.(cliqex)
 sort!(cliqex, by = x -> (x[1],x[2],x[3]))
@@ -49,7 +67,7 @@ function indexof(variable, string)
     findfirst(x -> x == variable, string)
 end
 
-dag = [0 1 1 0 0 0 0 0; 0 0 0 1 0 0 0 0; 0 0 0 0 1 0 1 0; 0 0 0 0 0 1 0 0; 0 0 0 0 0 1 0 1; 0 0 0 0 0 0 0 0; 0 0 0 0 0 0 0 1; 0 0 0 0 0 0 0 0]
+
 
 theta = []
 

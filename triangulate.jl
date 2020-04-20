@@ -34,21 +34,33 @@ CPTs = [A,B,C,D,E,F,G,H,I,J,K,L]
 CPTnames = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
 CPTlist = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
 
-#BNT 3, 8x8
-#dag = [0 1 0 0 0 0 0 0; 0 0 0 1 1 0 0 0; 0 0 0 1 0 1 0 0; 0 0 0 0 0 0 0 0; 0 0 0 0 0 0 1 0; 0 0 0 0 0 0 1 0; 0 0 0 0 0 0 0 1; 0 0 0 0 0 0 0 0]
-
-#BNT 4, 6x6, not working
-#= dag = [0 0 1 0 0 0; 0 0 1 1 0 0; 0 0 0 0 1 0; 0 0 0 0 0 0; 0 0 0 0 0 1; 0 0 0 0 0 0]
+#BNT 3, 8x8, working
+#= dag = [0 1 0 0 0 0 0 0; 0 0 0 1 1 0 0 0; 0 0 0 1 0 1 0 0; 0 0 0 0 0 0 0 0; 0 0 0 0 0 0 1 0; 0 0 0 0 0 0 1 0; 0 0 0 0 0 0 0 1; 0 0 0 0 0 0 0 0]
 A = [.5 .5]
 B = [.5 .5;.4 .6]
 C = [.7 .3;.2 .8]
+D = [.9 .1;.5 .5]
+E = [.3 .7;.6 .4]
+F = [.01 .99;.01 .99; .01 .99; .99 .01]
+G = [.8 .2; .1 .9]
+H = [.05 .95; .95 .05; .95 .05; .95 .05]
+
+CPTs = [A,B,C,D,E,F,G,H]
+CPTnames = ["A", "B", "C", "D", "E", "F", "G", "H"]
+CPTlist = ["A", "B", "C", "D", "E", "F", "G", "H"] =#
+
+#BNT 4, 6x6, working
+#= dag = [0 0 1 0 0 0; 0 0 1 1 0 0; 0 0 0 0 1 0; 0 0 0 0 0 0; 0 0 0 0 0 1; 0 0 0 0 0 0]
+A = [.5 .5]
+B = [.5 .5]
+C = [.7 .3;.2 .8;.1 .9;.2 .8]
 D = [.9 .1;.5 .5]
 E = [.3 .7;.6 .4]
 F = [.01 .99;.01 .99]
 
 CPTs = [A,B,C,D,E,F]
 CPTnames = ["A", "B", "C", "D", "E", "F"]
-CPTlist = ["A", "B", "C", "D", "E", "F"] =#
+CPTlist = ["A", "B", "C", "D", "E", "F"]  =#
 
 #BNT 5, 6x6, working
 #= dag = [0 1 1 0 0 0; 0 0 0 1 0 0; 0 0 0 0 1 0; 0 0 0 0 0 1; 0 0 0 0 0 1; 0 0 0 0 0 0]
@@ -186,7 +198,13 @@ function delete(nd) #delete node with lowest weight from moral graph
     for i in c
         push!(cliq,CPTnames[i])
     end
-    if size(cliq)[1] == 3
+    flag = false
+    for i in cliques
+        if issubset(cliq,i)
+           flag = true;
+        end
+    end
+    if !flag
         sort!(cliq)
         push!(cliques,cliq)
     end
