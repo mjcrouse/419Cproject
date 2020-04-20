@@ -1,11 +1,7 @@
 using DataStructures
 
-#cliqex = [["D", "E", "F"], ["E", "G", "H"], ["C", "E", "G"], ["A", "B", "C"], ["B", "C", "D"], ["C", "D", "E"]]
-cliqex = [["D", "E", "F"], ["E", "G", "H"], ["C", "E", "G"], ["A", "B", "D"], ["A", "C", "E"], ["A", "D", "E"]]
-cliqexnames = join.(cliqex)
-sort!(cliqex, by = x -> (x[1],x[2],x[3]))
-println("\ncliques\n",cliqex)
-
+#BNT 1, using my triangulation
+#= cliqex = [["D", "E", "F"], ["E", "G", "H"], ["C", "E", "G"], ["A", "B", "C"], ["B", "C", "D"], ["C", "D", "E"]]
 A = [.5 .5]
 B = [.5 .5;.4 .6]
 C = [.7 .3;.2 .8]
@@ -14,18 +10,41 @@ E = [.3 .7;.6 .4]
 F = [.01 .99;.01 .99; .01 .99; .99 .01]
 G = [.8 .2; .1 .9]
 H = [.05 .95; .95 .05; .95 .05; .95 .05]
-
-#= Av = ["on", "off"]
-Bv = ["on" "on"; "on" "off";"off" "on"; "off" "off"]
-Cv = deepcopy(Bv)
-Dv = deepcopy(Bv)
-Ev = deepcopy(Bv)
-Fv = ["on" "on" "on"; "on" "on" "off"; ] =#
-
 CPTs = [A,B,C,D,E,F,G,H]
 CPTnames = ["A", "B", "C", "D", "E", "F", "G", "H"]
-CPTlist = ["A", "B", "C", "D", "E", "F", "G", "H"]
+CPTlist = ["A", "B", "C", "D", "E", "F", "G", "H"] =#
 
+#BNT 1, using article triangulation
+#= cliqex = [["D", "E", "F"], ["E", "G", "H"], ["C", "E", "G"], ["A", "B", "D"], ["A", "C", "E"], ["A", "D", "E"]]
+A = [.5 .5]
+B = [.5 .5;.4 .6]
+C = [.7 .3;.2 .8]
+D = [.9 .1;.5 .5]
+E = [.3 .7;.6 .4]
+F = [.01 .99;.01 .99; .01 .99; .99 .01]
+G = [.8 .2; .1 .9]
+H = [.05 .95; .95 .05; .95 .05; .95 .05]
+CPTs = [A,B,C,D,E,F,G,H]
+CPTnames = ["A", "B", "C", "D", "E", "F", "G", "H"]
+CPTlist = ["A", "B", "C", "D", "E", "F", "G", "H"] =#
+
+# BNT 2, 6x6
+cliqex = [["D", "E", "F"], ["A", "B", "C"], ["B", "C", "D"], ["C", "D", "E"]]
+A = [.5 .5]
+B = [.5 .5;.4 .6]
+C = [.7 .3;.2 .8]
+D = [.9 .1;.5 .5]
+E = [.3 .7;.6 .4]
+F = [.01 .99;.01 .99;.05 .95;.95 .05]
+CPTs = [A,B,C,D,E,F]
+CPTnames = ["A", "B", "C", "D", "E", "F"]
+CPTlist = ["A", "B", "C", "D", "E", "F"]
+
+cliqexnames = join.(cliqex)
+sort!(cliqex, by = x -> (x[1],x[2],x[3]))
+println("\ncliques\n",cliqex)
+
+#helper to find index of CPT variable from letter string
 function indexof(variable, string)
     findfirst(x -> x == variable, string)
 end
@@ -225,9 +244,6 @@ potentials = Dict{Array, Array}()
 for i in tree
     potentials[i.name] = onepo(i)
 end
-for i in keys(potentials)
-    println(i, " ", potentials[i])
-end
 
 #initialize potentials, assumes standard variable pattern for CPTs
 for i in CPTlist
@@ -296,6 +312,7 @@ for i in CPTlist
     end
 end
 
+println("\nInitialized Potentials\n")
 for i in keys(potentials)
     println(i, " ", potentials[i])
 end
